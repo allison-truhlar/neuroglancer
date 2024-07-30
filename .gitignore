@@ -21,3 +21,4 @@ tsconfig.tsbuildinfo
 .eslintcache
 /lib
 /.firebase
+__screenshots__

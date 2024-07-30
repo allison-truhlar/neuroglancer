@@ -117,6 +117,7 @@ const specialProtocolEmptyCompletions: CompletionWithDescription[] = [
     description: "Google Cloud Storage (XML API) authenticated via ngauth",
   },
   { value: "s3://", description: "Amazon Simple Storage Service (S3)" },
+  { value: "s3+https://", description: "S3-compatible backend" },
   { value: "https://" },
   { value: "http://" },
 ];
@@ -149,6 +150,7 @@ export async function completeHttpPath(
     throw null;
   }
   const { protocol, host, path } = result;
+  console.log("protocol: ", protocol, "host: ", host, "path: ", path);
   const completions = await (async () => {
     if (protocol === "gs+xml" && path.length > 0) {
       return await getS3CompatiblePathCompletions(

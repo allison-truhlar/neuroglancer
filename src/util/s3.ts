@@ -41,11 +41,14 @@ export async function getS3PathCompletions(
   bucket: string,
   path: string,
   cancellationToken: CancellationToken,
+  customEndpoint?: string,
 ) {
+  const bucketUrl = customEndpoint || `https://${bucket}.s3.amazonaws.com`;
+  console.log("bucketURL:", bucketUrl);
   return await getS3CompatiblePathCompletions(
     undefined,
     `s3://${bucket}`,
-    `https://${bucket}.s3.amazonaws.com`,
+    bucketUrl,
     path,
     cancellationToken,
   );

@@ -123,6 +123,11 @@ export function parseSpecialUrl(
         credentialsProvider: undefined,
         url,
       };
+    case "s3+https":
+      return {
+        credentialsProvider: undefined,
+        url: "s3+https://" + u.host + u.path,
+      };
     default:
       return {
         credentialsProvider: undefined,

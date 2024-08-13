@@ -53,6 +53,7 @@ export async function getHtmlDirectoryListing(
   if (contentType === null || /\btext\/html\b/i.exec(contentType) === null) {
     return [];
   }
+  // console.log("getHtmlDirectoryListing contentType: ", contentType);
   const doc = new DOMParser().parseFromString(text, "text/html");
   const nodes = doc.evaluate(
     "//a/@href",
@@ -62,6 +63,7 @@ export async function getHtmlDirectoryListing(
     null,
   );
   const results: string[] = [];
+  console.log("results: ", results);
   for (let i = 0, n = nodes.snapshotLength; i < n; ++i) {
     const node = nodes.snapshotItem(i)!;
     const href = node.textContent;
@@ -142,6 +144,7 @@ export async function completeHttpPath(
     url,
     credentialsManager,
   );
+  console.log("parsed url: ", parsedUrl);
   const offset = url.length - parsedUrl.length;
   let result;
   try {
@@ -172,6 +175,14 @@ export async function completeHttpPath(
     }
     if (protocol === "s3" && path.length > 0) {
       return await getS3PathCompletions(host, path, cancellationToken);
+    }
+    if (protocol === "s3+https" && path.length > 0) {
+      return await getS3PathCompletions(
+        host,
+        path,
+        cancellationToken,
+        `https://${host}/${path}`,
+      );
     }
     const s3Match = parsedUrl.match(
       /^((?:http|https):\/\/(?:storage\.googleapis\.com\/[^/]+|[^/]+\.storage\.googleapis\.com|[^/]+\.s3(?:[^./]+)?\.amazonaws.com))(\/.*)$/,

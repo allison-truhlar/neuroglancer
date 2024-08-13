@@ -31,6 +31,8 @@ export async function getS3BucketListing(
   delimiter: string,
   cancellationToken: CancellationToken,
 ): Promise<string[]> {
+  console.log("prefix:", prefix);
+  console.log("credentialsProvider: ", credentialsProvider);
   const response = await fetchWithOAuth2Credentials(
     credentialsProvider,
     `${bucketUrl}?prefix=${encodeURIComponent(prefix)}` +
@@ -39,7 +41,9 @@ export async function getS3BucketListing(
     (x) => x.text(),
     cancellationToken,
   );
+  console.log("response: ", response);
   const doc = new DOMParser().parseFromString(response, "application/xml");
+  console.log("doc: ", doc);
   const commonPrefixNodes = doc.evaluate(
     '//*[name()="CommonPrefixes"]/*[name()="Prefix"]',
     doc,
@@ -51,6 +55,7 @@ export async function getS3BucketListing(
   for (let i = 0, n = commonPrefixNodes.snapshotLength; i < n; ++i) {
     results.push(commonPrefixNodes.snapshotItem(i)!.textContent || "");
   }
+  console.log("results: ", results);
   const contents = doc.evaluate(
     '//*[name()="Contents"]/*[name()="Key"]',
     doc,
@@ -58,6 +63,7 @@ export async function getS3BucketListing(
     XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
     null,
   );
+  console.log("contents: ", contents);
   for (let i = 0, n = contents.snapshotLength; i < n; ++i) {
     results.push(contents.snapshotItem(i)!.textContent || "");
   }
@@ -71,15 +77,23 @@ export async function getS3CompatiblePathCompletions(
   path: string,
   cancellationToken: CancellationToken,
 ): Promise<BasicCompletionResult> {
-  const prefix = path;
-  if (!prefix.startsWith("/")) throw null;
+  if (!path.startsWith("/")) throw null;
+
+  const parts = path.substring(1).split("/");
+
+  // This is to accomodate the prefix being the second part of the path for Janelia VAST
+  // E.g. https://nrs.int.janelia.org/cellmap-data?prefix=jrc_mus-liver-zon-3
+  const prefix = parts.length > 1 ? parts[1] : path.substring(1);
+
+  // Get the S3 bucket listing using the prefix
   const paths = await getS3BucketListing(
     credentialsProvider,
     bucketUrl,
-    path.substring(1),
+    prefix,
     "/",
     cancellationToken,
   );
+  console.log("paths: ", paths);
   const offset = path.lastIndexOf("/");
   return {
     offset: offset + enteredBucketUrl.length + 1,

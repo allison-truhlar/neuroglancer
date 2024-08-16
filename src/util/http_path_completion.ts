@@ -193,6 +193,7 @@ export async function completeHttpPath(
     }
     throw null;
   })();
+  console.log("completions: ", completions);
   return {
     offset: offset + completions.offset,
     completions: completions.completions,

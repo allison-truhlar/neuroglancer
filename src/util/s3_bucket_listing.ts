@@ -68,19 +68,19 @@ export async function getS3CompatiblePathCompletions(
   credentialsProvider: SpecialProtocolCredentialsProvider,
   enteredBucketUrl: string,
   bucketUrl: string,
-  path: string,
+  prefix: string,
   cancellationToken: CancellationToken,
 ): Promise<BasicCompletionResult> {
-  const prefix = path;
+  // const prefix = path;
   if (!prefix.startsWith("/")) throw null;
   const paths = await getS3BucketListing(
     credentialsProvider,
     bucketUrl,
-    path.substring(1),
+    prefix.substring(1),
     "/",
     cancellationToken,
   );
-  const offset = path.lastIndexOf("/");
+  const offset = prefix.lastIndexOf("/");
   return {
     offset: offset + enteredBucketUrl.length + 1,
     completions: paths.map((x) => ({ value: x.substring(offset) })),

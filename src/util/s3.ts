@@ -38,15 +38,33 @@ export async function cancellableFetchS3Ok<T>(
 }
 
 export async function getS3PathCompletions(
-  bucket: string,
+  host: string,
   path: string,
   cancellationToken: CancellationToken,
 ) {
+  let bucketUrl = "";
+  let prefix = "";
+
+  if (host === "https:" || host === "http:") {
+    bucketUrl = `${host}${path}`;
+    const urlObj = new URL(bucketUrl);
+    const pathnameWithSlashes = urlObj.pathname;
+    const pathParts = pathnameWithSlashes
+      .split("/")
+      .filter((part) => part !== "");
+    prefix = pathParts.length > 1 ? pathParts[pathParts.length - 1] : "";
+  } else {
+    bucketUrl = `https://${host}.s3.amazonaws.com`;
+    prefix = path;
+  }
+
+  console.log("prefix: ", prefix);
+
   return await getS3CompatiblePathCompletions(
     undefined,
-    `s3://${bucket}`,
-    `https://${bucket}.s3.amazonaws.com`,
-    path,
+    `s3://${host}`,
+    bucketUrl,
+    prefix,
     cancellationToken,
   );
 }

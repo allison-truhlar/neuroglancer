@@ -149,6 +149,7 @@ export async function completeHttpPath(
     throw null;
   }
   const { protocol, host, path } = result;
+  console.log("host: ", host, "path: ", path);
   const completions = await (async () => {
     if (protocol === "gs+xml" && path.length > 0) {
       return await getS3CompatiblePathCompletions(

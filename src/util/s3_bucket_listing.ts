@@ -31,6 +31,10 @@ export async function getS3BucketListing(
   delimiter: string,
   cancellationToken: CancellationToken,
 ): Promise<string[]> {
+  console.log("bucketUrl in getS3BucketListing: ", bucketUrl);
+  console.log("prefix in getS3BucketListing: ", prefix);
+  console.log("encoded prefix: ", encodeURIComponent(prefix));
+
   const response = await fetchWithOAuth2Credentials(
     credentialsProvider,
     `${bucketUrl}?prefix=${encodeURIComponent(prefix)}` +
@@ -71,18 +75,39 @@ export async function getS3CompatiblePathCompletions(
   path: string,
   cancellationToken: CancellationToken,
 ): Promise<BasicCompletionResult> {
-  const prefix = path;
-  if (!prefix.startsWith("/")) throw null;
+  // const prefix = path;
+  console.log(
+    "enteredBucketUrl in getS3CompatiblePathCompletions: ",
+    enteredBucketUrl,
+  );
+  console.log("bucketUrl in getS3CompatiblePathCompletions: ", bucketUrl);
+  console.log("path in getS3CompatiablePathCompletions: ", path);
+
+  if (!path.startsWith("/")) throw null;
+
+  const prefix = path.substring(1);
+  console.log("prefix, getS3CompatiblePathCompletions: ", prefix);
   const paths = await getS3BucketListing(
     credentialsProvider,
     bucketUrl,
-    path.substring(1),
+    prefix,
     "/",
     cancellationToken,
   );
-  const offset = path.lastIndexOf("/");
+  console.log("paths returned to getS3CompatiblePathCompletions: ", paths);
+  const offset = prefix.lastIndexOf("/");
+  // let completions = [];
+  // if (!enteredBucketUrl.endsWith("/")) {
+  //   completions = paths.map((x) => ({ value: "/" + x.substring(offset) }));
+  // } else {
+  //   completions = paths.map((x) => ({ value: x.substring(offset) }));
+  // }
+
   return {
     offset: offset + enteredBucketUrl.length + 1,
-    completions: paths.map((x) => ({ value: x.substring(offset) })),
+    completions: paths.map((x) => {
+      const value = x.substring(offset);
+      return { value: value.startsWith("/") ? value : "/" + value };
+    }),
   };
 }

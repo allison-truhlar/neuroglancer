@@ -42,10 +42,31 @@ export async function getS3PathCompletions(
   path: string,
   cancellationToken: CancellationToken,
 ) {
+  console.log("bucket passed to getS3PathCompletions: ", bucket);
+  console.log("path passed to getS3PathCompletions: ", path);
+
+  let bucketUrl = `https://${bucket}.s3.amazonaws.com`;
+  let enteredBucketUrl = `s3://${bucket}`;
+
+  if (bucket === "https:" || bucket === "http:") {
+    const pathParts = path.split("/").filter((part) => part !== "");
+    console.log("pathParts: ", pathParts);
+
+    if (pathParts.length <= 2) {
+      path = "/";
+      bucketUrl = bucket + "//" + pathParts.join("/");
+    } else if (pathParts.length >= 3) {
+      path = "/" + pathParts.slice(2).join("/") + "/";
+      bucketUrl = bucket + "//" + pathParts[0] + "/" + pathParts[1];
+    }
+
+    enteredBucketUrl = `s3://${bucketUrl}`;
+  }
+
   return await getS3CompatiblePathCompletions(
     undefined,
-    `s3://${bucket}`,
-    `https://${bucket}.s3.amazonaws.com`,
+    enteredBucketUrl,
+    bucketUrl,
     path,
     cancellationToken,
   );
